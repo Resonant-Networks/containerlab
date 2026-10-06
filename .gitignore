@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs and runtime artifacts
+*.log
+*.pcap
+*.pcapng
+*.tmp
+
+# Containerlab runtime artifacts
+clab-*/
+.test/
+*.tar.gz
+
+# Environment & credentials
+.env
+.env.local
+
+# OS / Editor specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

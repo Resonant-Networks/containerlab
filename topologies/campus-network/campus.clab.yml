@@ -1,0 +1,70 @@
+name: small-campus
+
+mgmt:
+  network: clab-campus
+  ipv4-subnet: 172.30.20.0/24
+
+topology:
+  kinds:
+    nokia_srlinux:
+      image: ghcr.io/nokia/srlinux
+    linux:
+      image: alpine:latest
+
+  nodes:
+    # Campus Core / Distribution Layer
+    core1:
+      kind: nokia_srlinux
+      startup-config: core1.cfg
+    core2:
+      kind: nokia_srlinux
+      startup-config: core2.cfg
+
+    # Campus Access Layer
+    access1:
+      kind: nokia_srlinux
+      startup-config: access1.cfg
+    access2:
+      kind: nokia_srlinux
+      startup-config: access2.cfg
+
+    # Campus Endpoints / Workstations & Servers
+    pc-eng:
+      kind: linux
+      exec:
+        - ip link set eth1 up
+        - ip addr add 10.10.10.10/24 dev eth1
+        - ip route add 10.0.0.0/8 via 10.10.10.1 dev eth1
+
+    pc-sales:
+      kind: linux
+      exec:
+        - ip link set eth1 up
+        - ip addr add 10.10.20.20/24 dev eth1
+        - ip route add 10.0.0.0/8 via 10.10.20.1 dev eth1
+
+    campus-server:
+      kind: linux
+      exec:
+        - ip link set eth1 up
+        - ip addr add 10.10.30.100/24 dev eth1
+        - ip route add 10.0.0.0/8 via 10.10.30.1 dev eth1
+
+  links:
+    # Core Interconnect (ISL)
+    - endpoints: ["core1:e1-1", "core2:e1-1"]
+
+    # Access1 Redundant Uplinks to Cores
+    - endpoints: ["core1:e1-2", "access1:e1-1"]
+    - endpoints: ["core2:e1-2", "access1:e1-2"]
+
+    # Access2 Redundant Uplinks to Cores
+    - endpoints: ["core1:e1-3", "access2:e1-1"]
+    - endpoints: ["core2:e1-3", "access2:e1-2"]
+
+    # Access Downlinks to Endpoints
+    - endpoints: ["access1:e1-3", "pc-eng:eth1"]
+    - endpoints: ["access2:e1-3", "pc-sales:eth1"]
+
+    # Core Connection to Server Farm
+    - endpoints: ["core1:e1-4", "campus-server:eth1"]
